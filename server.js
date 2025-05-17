@@ -4,7 +4,7 @@ const fs = require('fs');
 const path = require('path');
 const express = require('express');
 const cors = require('cors');
-const deployedVercelFrontendUrl = 'https://ai-sql-client.vercel.app/';
+const deployedVercelFrontendUrl = 'https://ai-sql-client.vercel.app';
 const allowedOrigins = process.env.NODE_ENV === 'production' 
     ? [deployedVercelFrontendUrl] 
     // For local development, allow React dev port and also your deployed frontend for easy testing
