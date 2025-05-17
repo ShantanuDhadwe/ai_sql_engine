@@ -4,10 +4,11 @@ const fs = require('fs');
 const path = require('path');
 const express = require('express');
 const cors = require('cors');
-const allowedOrigins = [
-    'http://localhost:3000', // For your local React dev
-    // 'https://your-deployed-frontend-url.vercel.app' // Add Vercel URL LATER
-];
+const deployedVercelFrontendUrl = 'https://ai-sql-client.vercel.app/';
+const allowedOrigins = process.env.NODE_ENV === 'production' 
+    ? [deployedVercelFrontendUrl] 
+    // For local development, allow React dev port and also your deployed frontend for easy testing
+    : ['http://localhost:3000', 'http://localhost:3001', deployedVercelFrontendUrl]; 
 const { Groq } = require('groq-sdk');
 const { createClient } = require('@supabase/supabase-js');
 
@@ -30,7 +31,7 @@ if (!GROQ_API_KEY || !SUPABASE_URL || !SUPABASE_SERVICE_KEY) {
 // --- Initialize Clients ---
 const groq = new Groq({ apiKey: GROQ_API_KEY });
 const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
-
+ 
 // --- Load Augmented Schema ---
 let augmentedSchemaString = '';
 try {
@@ -65,17 +66,58 @@ getEmbedder().catch(err => console.error("Initial embedder load failed, RAG will
 const app = express();
 app.use(cors({
   origin: function (origin, callback) {
-    if (!process.env.NODE_ENV || process.env.NODE_ENV !== 'production') {
-      // Allow all for local development if not in production
-      return callback(null, true);
+    // Allow requests with no origin (like mobile apps or curl requests) ONLY IN DEVELOPMENT
+    // For production, you might want to be stricter and disallow no-origin requests.
+    if (!origin && process.env.NODE_ENV !== 'production') {
+        console.log("CORS: Allowing request with no origin (development mode or tool)");
+        return callback(null, true);
     }
-    if (!origin || allowedOrigins.indexOf(origin) !== -1) {
-      callback(null, true);
+    
+    // Check if the provided origin is in our list of allowed origins
+    if (allowedOrigins.includes(origin)) {
+      console.log(`CORS: Origin ${origin} allowed.`);
+      callback(null, true); // Allow
     } else {
-      console.warn(`CORS: Origin ${origin} not allowed.`); // Log blocked origins
-      callback(new Error('Not allowed by CORS'));
+      console.warn(`CORS: Origin ${origin} NOT allowed. Allowed are: ${allowedOrigins.join(', ')}`);
+      callback(new Error(`Not allowed by CORS. Origin: ${origin}`)); // Block
     }
-  }
+  },
+  methods: ['GET', 'POST', 'OPTIONS'], // Ensure OPTIONS is allowed for preflight requests
+  allowedHeaders: ['Content-Type', 'Authorization'], // Add any other headers your frontend might send
+  credentials: true // If you ever use cookies or authorization headers
+}));
+
+// Handle preflight OPTIONS requests for all routes
+app.options('*', cors({
+    origin: function (origin, callback) { // Same origin check as above
+        if (!origin && process.env.NODE_ENV !== 'production') {
+            return callback(null, true);
+        }
+        if (allowedOrigins.includes(origin)) {
+            callback(null, true);
+        } else {
+            callback(new Error(`Not allowed by CORS. Origin: ${origin}`));
+        }
+    },
+    methods: ['GET', 'POST', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+    credentials: true
+}));
+// Handle preflight OPTIONS requests for all routes
+app.options('*', cors({
+    origin: function (origin, callback) { // Same origin check as above
+        if (!origin && process.env.NODE_ENV !== 'production') {
+            return callback(null, true);
+        }
+        if (allowedOrigins.includes(origin)) {
+            callback(null, true);
+        } else {
+            callback(new Error(`Not allowed by CORS. Origin: ${origin}`));
+        }
+    },
+    methods: ['GET', 'POST', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+    credentials: true
 }));
 app.use(express.json());
 
