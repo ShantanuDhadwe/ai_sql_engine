@@ -1,0 +1,56 @@
+{
+  "database_description": "Internal sales and customer tracking system for MessyCorp.",
+  "tables": [
+    {
+      "actual_name": "user_data_final",
+      "semantic_name": "Customers",
+      "description": "Contains customer records including sign-up date and activity status.",
+      "columns": [
+        {"actual_name": "id", "semantic_name": "CustomerID", "data_type": "INT", "description": "Unique customer identifier (PK)."},
+        {"actual_name": "val_1", "semantic_name": "CustomerName", "data_type": "VARCHAR", "description": "Full name of the customer, sometimes includes titles or has typos."},
+        {"actual_name": "location_field", "semantic_name": "Location", "data_type": "VARCHAR", "description": "Customer city and state, various formats (e.g., 'New York, NY', 'LosAngeles CA')."},
+        {"actual_name": "joined_dt", "semantic_name": "JoinDate", "data_type": "VARCHAR", "description": "Date customer joined, various string formats ('YYYY-MM-DD', 'MM/DD/YYYY', 'Mon DD YYYY'). Needs parsing to date for comparison."},
+        {"actual_name": "status", "semantic_name": "IsActive", "data_type": "INT", "description": "1 for Active, 0 for Inactive, NULL for Unknown."}
+      ]
+    },
+    {
+      "actual_name": "product_info_main",
+      "semantic_name": "Products",
+      "description": "Stores product details.",
+      "columns": [
+        {"actual_name": "p_id", "semantic_name": "ProductID", "data_type": "INT", "description": "Unique product identifier (PK)."},
+        {"actual_name": "item_name", "semantic_name": "ProductName", "data_type": "VARCHAR", "description": "Name of the product."},
+        {"actual_name": "category_X", "semantic_name": "Category", "data_type": "VARCHAR", "description": "Product category, inconsistent casing (e.g., 'Electronics', 'electronics')."},
+        {"actual_name": "cost_usd", "semantic_name": "CostUSD", "data_type": "NUMERIC(10, 2)", "description": "Cost of the product in USD."},
+        {"actual_name": "col_extra_1", "semantic_name": "SupplierNotes", "data_type": "TEXT", "description": "Unnamed column, sometimes contains supplier notes or is empty."}
+      ]
+    },
+    {
+      "actual_name": "orders_table_v2",
+      "semantic_name": "Orders",
+      "description": "Order line items. Each row is one product in an order.",
+      "columns": [
+        {"actual_name": "order_ref", "semantic_name": "OrderReferenceID", "data_type": "VARCHAR", "description": "Unique reference for the order (PK)."},
+        {"actual_name": "customer_identifier", "semantic_name": "CustomerID_FK", "data_type": "INT", "description": "Links to Customers.id (user_data_final.id). Some IDs might not exist in Customers table."},
+        {"actual_name": "prod_sku", "semantic_name": "ProductID_FK", "data_type": "INT", "description": "Links to Products.p_id (product_info_main.p_id). Some SKUs might not exist in Products table."},
+        {"actual_name": "qty", "semantic_name": "Quantity", "data_type": "INT", "description": "Quantity ordered. Negative values indicate returns."},
+        {"actual_name": "order_timestamp", "semantic_name": "OrderTimestamp", "data_type": "BIGINT", "description": "Unix timestamp of when the order was placed."},
+        {"actual_name": "price_total", "semantic_name": "TotalPriceString", "data_type": "VARCHAR", "description": "Total price for this line item, stored as a string with potential '$' (e.g., '$50.99', '23.5'). Needs cleaning to be numeric."},
+        {"actual_name": "UnnamedColumn", "semantic_name": "DiscountAmount", "data_type": "NUMERIC(10,2)", "description": "Often a discount amount, but sometimes NULL or irrelevant."}
+      ]
+    }
+  ],
+  "relationships": [
+    {"from_table_semantic": "Orders", "from_column_semantic": "CustomerID_FK", "to_table_semantic": "Customers", "to_column_semantic": "CustomerID", "from_table_actual": "orders_table_v2", "from_column_actual": "customer_identifier", "to_table_actual": "user_data_final", "to_column_actual": "id"},
+    {"from_table_semantic": "Orders", "from_column_semantic": "ProductID_FK", "to_table_semantic": "Products", "to_column_semantic": "ProductID", "from_table_actual": "orders_table_v2", "from_column_actual": "prod_sku", "to_table_actual": "product_info_main", "to_column_actual": "p_id"}
+  ],
+  "general_hints": [
+    "When comparing dates from 'Customers.JoinDate' (user_data_final.joined_dt), attempt to parse them using PostgreSQL's date functions like to_date(). Common formats are 'YYYY-MM-DD', 'MM/DD/YYYY', 'Mon DD YYYY'. If multiple formats are possible, use CASE statements or try_to_date if available/appropriate for robustness.",
+    "For 'Orders.TotalPriceString' (orders_table_v2.price_total), remove '$' and commas, then cast to numeric for calculations. Example: REPLACE(REPLACE(price_total, '$', ''), ',', '')::NUMERIC.",
+    "Customer activity is in 'Customers.IsActive' (user_data_final.status = 1 for active).",
+    "Product categories in 'Products.Category' (product_info_main.category_X) might need LOWER() for consistent grouping: LOWER(category_X).",
+    "Order timestamps (orders_table_v2.order_timestamp) are Unix timestamps and can be converted to dates using to_timestamp(). Example: to_timestamp(order_timestamp).",
+    "Negative 'Orders.Quantity' (orders_table_v2.qty) indicates a return.",
+    "When joining tables, explicitly use the actual table and column names provided in the 'actual_name' fields (e.g., user_data_final.id = orders_table_v2.customer_identifier)."
+  ]
+}

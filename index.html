@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ask My Database</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; margin: 0; padding: 0; background-color: #f4f6f8; color: #333; line-height: 1.6; }
+        .container { max-width: 800px; margin: 30px auto; background-color: white; padding: 25px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        h1 { color: #2c3e50; text-align: center; margin-bottom: 25px; }
+        .input-area { display: flex; margin-bottom: 25px; }
+        input[type="text"] { flex-grow: 1; padding: 12px 15px; border: 1px solid #dcdfe6; border-radius: 6px; font-size: 1rem; margin-right: 10px; }
+        input[type="text"]:focus { border-color: #007bff; box-shadow: 0 0 0 0.2rem rgba(0,123,255,.25); outline: none;}
+        button { padding: 12px 20px; background-color: #007bff; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 1rem; transition: background-color 0.2s ease; }
+        button:hover { background-color: #0056b3; }
+        button:disabled { background-color: #6c757d; cursor: not-allowed; }
+
+        .loading-indicator, .error-message { margin-top: 15px; padding: 10px; border-radius: 4px; text-align: center; }
+        .loading-indicator { color: #007bff; }
+        .error-message { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+
+        .results-area { margin-top: 20px; }
+        .response-section { background-color: #f9fafb; border: 1px solid #e5e7eb; border-radius: 6px; padding: 15px; margin-bottom: 20px; }
+        .response-section h3 { margin-top: 0; color: #1f2937; border-bottom: 1px solid #e5e7eb; padding-bottom: 8px; margin-bottom: 12px; font-size: 1.1rem; font-weight: 600;}
+        #nlSummary { font-size: 1.05rem; color: #374151; }
+        #sqlQueryDisplay { font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, Courier, monospace; white-space: pre-wrap; word-break: break-all; background-color: #282c34; color: #abb2bf; padding: 12px; border-radius: 4px; max-height: 200px; overflow-y: auto; font-size: 0.9em;}
+        #dataTableContainer table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 0.9rem; }
+        #dataTableContainer th, #dataTableContainer td { border: 1px solid #d1d5db; padding: 10px; text-align: left; }
+        #dataTableContainer th { background-color: #e5e7eb; color: #374151; font-weight: 600; }
+        #dataTableContainer td { background-color: #fff; }
+        #dataTableContainer tr:nth-child(even) td { background-color: #f9fafb; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Ask Your Business Data</h1>
+        <div class="input-area">
+            <input type="text" id="questionInput" placeholder="E.g., How many active customers are there?">
+            <button id="askButton" onclick="askQuestion()">Ask</button>
+        </div>
+
+        <div id="loadingIndicator" class="loading-indicator" style="display: none;">Loading...</div>
+        <div id="errorDisplay" class="error-message" style="display: none;"></div>
+
+        <div id="resultsDisplayArea" class="results-area" style="display: none;">
+            <div class="response-section">
+                <h3>Natural Language Answer:</h3>
+                <p id="nlSummary"></p>
+            </div>
+
+            <div class="response-section">
+                <h3>Generated SQL Query:</h3>
+                <pre id="sqlQueryDisplay"></pre>
+            </div>
+
+            <div class="response-section">
+                <h3>Data Table:</h3>
+                <div id="dataTableContainer">No data to display.</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const questionInput = document.getElementById('questionInput');
+        const askButton = document.getElementById('askButton');
+        const loadingIndicator = document.getElementById('loadingIndicator');
+        const errorDisplay = document.getElementById('errorDisplay');
+        const resultsDisplayArea = document.getElementById('resultsDisplayArea');
+        const nlSummaryEl = document.getElementById('nlSummary');
+        const sqlQueryDisplayEl = document.getElementById('sqlQueryDisplay');
+        const dataTableContainerEl = document.getElementById('dataTableContainer');
+
+        async function askQuestion() {
+            const userQuestion = questionInput.value;
+
+            if (!userQuestion.trim()) {
+                errorDisplay.textContent = 'Please enter a question.';
+                errorDisplay.style.display = 'block';
+                resultsDisplayArea.style.display = 'none';
+                return;
+            }
+
+            // Reset UI
+            askButton.disabled = true;
+            loadingIndicator.style.display = 'block';
+            errorDisplay.style.display = 'none';
+            resultsDisplayArea.style.display = 'none';
+            nlSummaryEl.textContent = '';
+            sqlQueryDisplayEl.textContent = '';
+            dataTableContainerEl.innerHTML = 'No data to display.';
+
+            try {
+                const backendUrl = `http://localhost:3002/ask?question=${encodeURIComponent(userQuestion)}`;
+                const response = await fetch(backendUrl);
+
+                if (!response.ok) {
+                    // Try to parse error from backend, otherwise use status text
+                    let errorDetails = `Server responded with status: ${response.status} ${response.statusText}`;
+                    try {
+                        const errData = await response.json();
+                        errorDetails = `Error: ${errData.error || 'Unknown server error'}. ${errData.details ? (typeof errData.details === 'string' ? errData.details : JSON.stringify(errData.details)) : (errData.naturalLanguageSummary || '')}`;
+                    } catch (e) { /* Failed to parse JSON, use original errorDetails */ }
+                    throw new Error(errorDetails);
+                }
+
+                const data = await response.json();
+
+                // Display Natural Language Summary
+                nlSummaryEl.textContent = data.naturalLanguageSummary || 'No summary provided.';
+
+                // Display SQL Query
+                sqlQueryDisplayEl.textContent = data.generatedSql || 'No SQL query generated.';
+
+                // Display Data Table
+                if (data.databaseResults) {
+                    if (Array.isArray(data.databaseResults) && data.databaseResults.length > 0) {
+                        let tableHTML = '<table><thead><tr>';
+                        // Assuming the first object has all headers
+                        const headers = Object.keys(data.databaseResults[0]);
+                        headers.forEach(header => tableHTML += `<th>${escapeHtml(header)}</th>`);
+                        tableHTML += '</tr></thead><tbody>';
+
+                        data.databaseResults.forEach(row => {
+                            tableHTML += '<tr>';
+                            headers.forEach(header => {
+                                const cellValue = row[header] === null || row[header] === undefined ? '' : String(row[header]);
+                                tableHTML += `<td>${escapeHtml(cellValue)}</td>`;
+                            });
+                            tableHTML += '</tr>';
+                        });
+                        tableHTML += '</tbody></table>';
+                        dataTableContainerEl.innerHTML = tableHTML;
+                    } else if (Array.isArray(data.databaseResults) && data.databaseResults.length === 0) {
+                        dataTableContainerEl.innerHTML = '<p>Query executed successfully, but no data was returned.</p>';
+                    } else if (typeof data.databaseResults === 'object' && data.databaseResults.message) {
+                        // Handle status messages from execute_dynamic_sql (e.g., for non-SELECT queries)
+                        dataTableContainerEl.innerHTML = `<p>${escapeHtml(data.databaseResults.message)}</p>`;
+                    } else {
+                         dataTableContainerEl.innerHTML = '<p>Data format is unexpected or no data to display.</p>';
+                    }
+                } else {
+                    dataTableContainerEl.innerHTML = '<p>No database results were returned.</p>';
+                }
+                resultsDisplayArea.style.display = 'block';
+
+            } catch (error) {
+                console.error('Error asking question:', error);
+                errorDisplay.textContent = error.message;
+                errorDisplay.style.display = 'block';
+            } finally {
+                askButton.disabled = false;
+                loadingIndicator.style.display = 'none';
+            }
+        }
+
+        // Utility function to escape HTML to prevent XSS if data isn't trusted
+        // For this internal tool where you control the data, it's less critical, but good practice.
+        function escapeHtml(unsafe) {
+            if (typeof unsafe !== 'string') {
+                unsafe = String(unsafe);
+            }
+            return unsafe
+                 .replace(/&/g, "&amp;")
+                 .replace(/</g, "&lt;")
+                 .replace(/>/g, "&gt;")
+                 .replace(/"/g, "&quot;")
+                 .replace(/'/g, "&#39;");
+        }
+
+        // Optional: Allow pressing Enter in the input field to submit
+        questionInput.addEventListener('keypress', function(event) {
+            if (event.key === 'Enter') {
+                event.preventDefault(); // Prevent default form submission if it were in a form
+                askButton.click(); // Trigger the ask button's click event
+            }
+        });
+
+    </script>
+</body>
+</html>

@@ -1,0 +1,167 @@
+{
+  "database_description": "Chinook Digital Media Store - a database containing information about a music store, including artists, albums, tracks, media types, genres, customers, employees, invoices, and playlists.",
+  "tables": [
+    {
+      "actual_name": "artist",
+      "semantic_name": "Artists",
+      "description": "Stores information about music artists or bands.",
+      "columns": [
+        {"actual_name": "artist_id", "semantic_name": "ArtistID", "data_type": "INTEGER", "description": "Unique identifier for the artist (Primary Key)."},
+        {"actual_name": "name", "semantic_name": "ArtistName", "data_type": "VARCHAR(120)", "description": "The name of the music artist or band."}
+      ]
+    },
+    {
+      "actual_name": "album",
+      "semantic_name": "Albums",
+      "description": "Stores information about music albums.",
+      "columns": [
+        {"actual_name": "album_id", "semantic_name": "AlbumID", "data_type": "INTEGER", "description": "Unique identifier for the album (Primary Key)."},
+        {"actual_name": "title", "semantic_name": "AlbumTitle", "data_type": "VARCHAR(160)", "description": "The title of the music album."},
+        {"actual_name": "artist_id", "semantic_name": "ArtistID_FK", "data_type": "INTEGER", "description": "Identifier for the artist of this album (Foreign Key to the 'artist' table's 'artistid')."}
+      ]
+    },
+    {
+      "actual_name": "track",
+      "semantic_name": "Tracks",
+      "description": "Contains detailed information about individual music tracks or songs.",
+      "columns": [
+        {"actual_name": "trackid", "semantic_name": "TrackID", "data_type": "INTEGER", "description": "Unique identifier for the track (Primary Key)."},
+        {"actual_name": "name", "semantic_name": "TrackName", "data_type": "VARCHAR(200)", "description": "The name or title of the track/song."},
+        {"actual_name": "album_id", "semantic_name": "AlbumID_FK", "data_type": "INTEGER", "description": "Identifier for the album this track belongs to (Foreign Key to 'album'.'albumid'). Can be null if track is not part of an album."},
+        {"actual_name": "media_type_id", "semantic_name": "MediaTypeID_FK", "data_type": "INTEGER", "description": "Identifier for the media type of the track (Foreign Key to 'mediatype'.'mediatypeid')."},
+        {"actual_name": "genre_id", "semantic_name": "GenreID_FK", "data_type": "INTEGER", "description": "Identifier for the genre of the track (Foreign Key to 'genre'.'genreid'). Can be null."},
+        {"actual_name": "composer", "semantic_name": "ComposerName", "data_type": "VARCHAR(220)", "description": "The name(s) of the composer(s) of the track. Can be null or contain multiple names."},
+        {"actual_name": "milliseconds", "semantic_name": "DurationMilliseconds", "data_type": "INTEGER", "description": "The duration of the track in milliseconds."},
+        {"actual_name": "bytes", "semantic_name": "FileSizeInBytes", "data_type": "INTEGER", "description": "The size of the track file in bytes. Can be null for some media types."},
+        {"actual_name": "unit_price", "semantic_name": "UnitPrice", "data_type": "NUMERIC(10,2)", "description": "The unit price for purchasing the track."}
+      ]
+    },
+    {
+      "actual_name": "genre",
+      "semantic_name": "Genres",
+      "description": "Stores music genre classifications.",
+      "columns": [
+        {"actual_name": "genre_id", "semantic_name": "GenreID", "data_type": "INTEGER", "description": "Unique identifier for the genre (Primary Key)."},
+        {"actual_name": "name", "semantic_name": "GenreName", "data_type": "VARCHAR(120)", "description": "The name of the music genre (e.g., Rock, Jazz, Metal)."}
+      ]
+    },
+    {
+      "actual_name": "media_type",
+      "semantic_name": "MediaTypes",
+      "description": "Stores types of media for tracks (e.g., MPEG audio file, AAC audio file).",
+      "columns": [
+        {"actual_name": "media_type_id", "semantic_name": "MediaTypeID", "data_type": "INTEGER", "description": "Unique identifier for the media type (Primary Key)."},
+        {"actual_name": "name", "semantic_name": "MediaTypeName", "data_type": "VARCHAR(120)", "description": "The name of the media type."}
+      ]
+    },
+    {
+      "actual_name": "playlist",
+      "semantic_name": "Playlists",
+      "description": "Stores information about user-created or system playlists.",
+      "columns": [
+        {"actual_name": "playlist_id", "semantic_name": "PlaylistID", "data_type": "INTEGER", "description": "Unique identifier for the playlist (Primary Key)."},
+        {"actual_name": "name", "semantic_name": "PlaylistName", "data_type": "VARCHAR(120)", "description": "The name of the playlist."}
+      ]
+    },
+    {
+      "actual_name": "playlist_track",
+      "semantic_name": "PlaylistTracks",
+      "description": "A junction table linking playlists to tracks. It shows which tracks belong to which playlists.",
+      "columns": [
+        {"actual_name": "playlist_id", "semantic_name": "PlaylistID_FK", "data_type": "INTEGER", "description": "Identifier for the playlist (Composite Primary Key, Foreign Key to 'playlist'.'playlistid')."},
+        {"actual_name": "track_id", "semantic_name": "TrackID_FK", "data_type": "INTEGER", "description": "Identifier for the track (Composite Primary Key, Foreign Key to 'track'.'trackid')."}
+      ]
+    },
+    {
+      "actual_name": "customer",
+      "semantic_name": "Customers",
+      "description": "Stores information about customers who make purchases.",
+      "columns": [
+        {"actual_name": "customer_id", "semantic_name": "CustomerID", "data_type": "INTEGER", "description": "Unique identifier for the customer (Primary Key)."},
+        {"actual_name": "first_name", "semantic_name": "FirstName", "data_type": "VARCHAR(40)", "description": "Customer's first name."},
+        {"actual_name": "last_name", "semantic_name": "LastName", "data_type": "VARCHAR(20)", "description": "Customer's last name."},
+        {"actual_name": "company", "semantic_name": "CompanyName", "data_type": "VARCHAR(80)", "description": "Customer's company name. Can be null."},
+        {"actual_name": "address", "semantic_name": "Address", "data_type": "VARCHAR(70)", "description": "Customer's street address."},
+        {"actual_name": "city", "semantic_name": "City", "data_type": "VARCHAR(40)", "description": "Customer's city."},
+        {"actual_name": "state", "semantic_name": "State", "data_type": "VARCHAR(40)", "description": "Customer's state or province. Can be null."},
+        {"actual_name": "country", "semantic_name": "Country", "data_type": "VARCHAR(40)", "description": "Customer's country."},
+        {"actual_name": "postal_code", "semantic_name": "PostalCode", "data_type": "VARCHAR(10)", "description": "Customer's postal code. Can be null."},
+        {"actual_name": "phone", "semantic_name": "PhoneNumber", "data_type": "VARCHAR(24)", "description": "Customer's phone number. Can be null."},
+        {"actual_name": "fax", "semantic_name": "FaxNumber", "data_type": "VARCHAR(24)", "description": "Customer's fax number. Can be null."},
+        {"actual_name": "email", "semantic_name": "EmailAddress", "data_type": "VARCHAR(60)", "description": "Customer's email address."},
+        {"actual_name": "support_rep_id", "semantic_name": "SupportRepID_FK", "data_type": "INTEGER", "description": "Identifier for the employee who is the support representative for this customer (Foreign Key to 'employee'.'employeeid'). Can be null."}
+      ]
+    },
+    {
+      "actual_name": "employee",
+      "semantic_name": "Employees",
+      "description": "Stores information about employees of the digital media store.",
+      "columns": [
+        {"actual_name": "employee_id", "semantic_name": "EmployeeID", "data_type": "INTEGER", "description": "Unique identifier for the employee (Primary Key)."},
+        {"actual_name": "last_name", "semantic_name": "LastName", "data_type": "VARCHAR(20)", "description": "Employee's last name."},
+        {"actual_name": "first_name", "semantic_name": "FirstName", "data_type": "VARCHAR(20)", "description": "Employee's first name."},
+        {"actual_name": "title", "semantic_name": "JobTitle", "data_type": "VARCHAR(30)", "description": "Employee's job title (e.g., Sales Manager, IT Staff)."},
+        {"actual_name": "reports_to", "semantic_name": "ReportsTo_FK", "data_type": "INTEGER", "description": "Identifier of the employee this employee reports to (Self-referencing Foreign Key to 'employee'.'employeeid'). Can be null for top-level employees."},
+        {"actual_name": "birth_date", "semantic_name": "BirthDate", "data_type": "TIMESTAMP", "description": "Employee's date of birth."},
+        {"actual_name": "hire_date", "semantic_name": "HireDate", "data_type": "TIMESTAMP", "description": "Date when the employee was hired."},
+        {"actual_name": "address", "semantic_name": "Address", "data_type": "VARCHAR(70)", "description": "Employee's street address."},
+        {"actual_name": "city", "semantic_name": "City", "data_type": "VARCHAR(40)", "description": "Employee's city."},
+        {"actual_name": "state", "semantic_name": "State", "data_type": "VARCHAR(40)", "description": "Employee's state or province."},
+        {"actual_name": "country", "semantic_name": "Country", "data_type": "VARCHAR(40)", "description": "Employee's country."},
+        {"actual_name": "postal_code", "semantic_name": "PostalCode", "data_type": "VARCHAR(10)", "description": "Employee's postal code."},
+        {"actual_name": "phone", "semantic_name": "PhoneNumber", "data_type": "VARCHAR(24)", "description": "Employee's phone number."},
+        {"actual_name": "fax", "semantic_name": "FaxNumber", "data_type": "VARCHAR(24)", "description": "Employee's fax number."},
+        {"actual_name": "email", "semantic_name": "EmailAddress", "data_type": "VARCHAR(60)", "description": "Employee's email address."}
+      ]
+    },
+    {
+      "actual_name": "invoice",
+      "semantic_name": "Invoices",
+      "description": "Stores customer invoice headers.",
+      "columns": [
+        {"actual_name": "invoice_id", "semantic_name": "InvoiceID", "data_type": "INTEGER", "description": "Unique identifier for the invoice (Primary Key)."},
+        {"actual_name": "customer_id", "semantic_name": "CustomerID_FK", "data_type": "INTEGER", "description": "Identifier for the customer associated with this invoice (Foreign Key to 'customer'.'customerid')."},
+        {"actual_name": "invoice_date", "semantic_name": "InvoiceDate", "data_type": "TIMESTAMP", "description": "The date and time the invoice was generated."},
+        {"actual_name": "billing_address", "semantic_name": "BillingAddress", "data_type": "VARCHAR(70)", "description": "Billing street address for the invoice."},
+        {"actual_name": "billing_city", "semantic_name": "BillingCity", "data_type": "VARCHAR(40)", "description": "Billing city for the invoice."},
+        {"actual_name": "billing_state", "semantic_name": "BillingState", "data_type": "VARCHAR(40)", "description": "Billing state or province. Can be null."},
+        {"actual_name": "billing_country", "semantic_name": "BillingCountry", "data_type": "VARCHAR(40)", "description": "Billing country."},
+        {"actual_name": "billing_postal_code", "semantic_name": "BillingPostalCode", "data_type": "VARCHAR(10)", "description": "Billing postal code. Can be null."},
+        {"actual_name": "total", "semantic_name": "InvoiceTotal", "data_type": "NUMERIC(10,2)", "description": "The total amount for the invoice."}
+      ]
+    },
+    {
+      "actual_name": "invoice_line",
+      "semantic_name": "InvoiceLines",
+      "description": "Stores individual line items for each invoice.",
+      "columns": [
+        {"actual_name": "invoice_line_id", "semantic_name": "InvoiceLineID", "data_type": "INTEGER", "description": "Unique identifier for the invoice line item (Primary Key)."},
+        {"actual_name": "invoice_id", "semantic_name": "InvoiceID_FK", "data_type": "INTEGER", "description": "Identifier for the invoice this line item belongs to (Foreign Key to 'invoice'.'invoiceid')."},
+        {"actual_name": "track_id", "semantic_name": "TrackID_FK", "data_type": "INTEGER", "description": "Identifier for the track purchased in this line item (Foreign Key to 'track'.'trackid')."},
+        {"actual_name": "unit_price", "semantic_name": "UnitPrice", "data_type": "NUMERIC(10,2)", "description": "The unit price of the track at the time of purchase."},
+        {"actual_name": "quantity", "semantic_name": "Quantity", "data_type": "INTEGER", "description": "The quantity of the track purchased (usually 1 for digital tracks)."}
+      ]
+    }
+  ],
+  "relationships": [
+    {"from_table_actual": "album", "from_column_actual": "artist_id", "to_table_actual": "artist", "to_column_actual": "artist_id", "description": "Each album is by one artist."},
+    {"from_table_actual": "track", "from_column_actual": "album_id", "to_table_actual": "album", "to_column_actual": "album_id", "description": "Each track belongs to one album."},
+    {"from_table_actual": "track", "from_column_actual": "media_type_id", "to_table_actual": "media_type", "to_column_actual": "media_type_id", "description": "Each track has a media type."},
+    {"from_table_actual": "track", "from_column_actual": "genre_id", "to_table_actual": "genre", "to_column_actual": "genreid", "description": "Each track belongs to one genre."},
+    {"from_table_actual": "playlist_track", "from_column_actual": "playlist_id", "to_table_actual": "playlist", "to_column_actual": "playlist_id", "description": "Connects tracks to playlists."},
+    {"from_table_actual": "playlist_track", "from_column_actual": "track_id", "to_table_actual": "track", "to_column_actual": "track_id", "description": "Connects playlists to tracks."},
+    {"from_table_actual": "customer", "from_column_actual": "support_rep_id", "to_table_actual": "employee", "to_column_actual": "employee_id", "description": "Each customer has an assigned support representative (employee)."},
+    {"from_table_actual": "employee", "from_column_actual": "reports_to", "to_table_actual": "employee", "to_column_actual": "employee_id", "description": "Indicates the manager an employee reports to (self-referencing)."},
+    {"from_table_actual": "invoice", "from_column_actual": "customer_id", "to_table_actual": "customer", "to_column_actual": "customer_id", "description": "Each invoice is for one customer."},
+    {"from_table_actual": "invoice_line", "from_column_actual": "invoice_id", "to_table_actual": "invoice", "to_column_actual": "invoice_id", "description": "Each invoice line belongs to one invoice."},
+    {"from_table_actual": "invoice_line", "from_column_actual": "track_id", "to_table_actual": "track", "to_column_actual": "track_id", "description": "Each invoice line refers to one track."}
+  ],
+  "general_hints": [
+    "Table and column names in SQL queries should be lowercase (e.g., 'artist', 'artistid') as this is the PostgreSQL default for unquoted identifiers.",
+    "Dates (like 'invoicedate', 'birthdate', 'hiredate') are stored as TIMESTAMP. For date-only comparisons, you might need to cast or use date functions (e.g., DATE(invoicedate)).",
+    "To get the duration of a track in minutes, divide 'milliseconds' by 60000.",
+    "The 'playlisttrack' table is a many-to-many junction table between 'playlist' and 'track'.",
+    "The 'employee' table has a self-referencing 'reportsto' column to indicate reporting hierarchy.",
+    "Customer full names can be constructed by concatenating 'firstname' and 'lastname'."
+  ]
+}

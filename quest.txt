@@ -1,0 +1,13 @@
+"List all artists."
+
+"How many albums does the band 'Queen' have?" (Verify if 'Queen' is in your artist table)
+
+"Show me all tracks from the 'Rock' genre."
+
+"Which customers are from Germany?"
+
+"What is the total amount for invoice number 100?"
+
+"List employees and their hire dates."
+
+"What songs are in the 'Heavy Metal Classic' playlist?"
