@@ -25,7 +25,7 @@
       "semantic_name": "Tracks",
       "description": "Contains detailed information about individual music tracks or songs.",
       "columns": [
-        {"actual_name": "trackid", "semantic_name": "TrackID", "data_type": "INTEGER", "description": "Unique identifier for the track (Primary Key)."},
+        {"actual_name": "track_id", "semantic_name": "TrackID", "data_type": "INTEGER", "description": "Unique identifier for the track (Primary Key)."},
         {"actual_name": "name", "semantic_name": "TrackName", "data_type": "VARCHAR(200)", "description": "The name or title of the track/song."},
         {"actual_name": "album_id", "semantic_name": "AlbumID_FK", "data_type": "INTEGER", "description": "Identifier for the album this track belongs to (Foreign Key to 'album'.'albumid'). Can be null if track is not part of an album."},
         {"actual_name": "media_type_id", "semantic_name": "MediaTypeID_FK", "data_type": "INTEGER", "description": "Identifier for the media type of the track (Foreign Key to 'mediatype'.'mediatypeid')."},
